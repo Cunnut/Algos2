@@ -6,6 +6,7 @@
  */
 #include "Celula.h"
 
+
 void matarCelula(Celula &celula){
 	celula.estado = Muerta;
 }

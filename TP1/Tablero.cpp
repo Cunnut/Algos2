@@ -47,5 +47,13 @@ void mostrarTablero(Tablero tabla){
 	cout << endl << endl;
 }
 
+void copiarTablero(  Celula tablero[CANTIDAD_FILAS][CANTIDAD_COLUMNAS], Celula copiaTablero[CANTIDAD_FILAS][CANTIDAD_COLUMNAS]){
+	for(int i = 0; i < CANTIDAD_FILAS; i++){
+		for(int j = 0; j < CANTIDAD_COLUMNAS; j++){
+			copiaTablero[i][j].estado = tablero[i][j].estado;
+		}
+	}
+}
+
 
 

@@ -9,6 +9,10 @@
 #include <iostream>
 using namespace std;
 
+void cargarTunosLimites(JuegoDeLaVida &juego){
+	cout << "Ingrese la cantidad de turnos limites:  ";
+	cin >> juego.cantidadLimiteDeTurnos;
+}
 
 void determinarTopes(const int fila,const int  columna, int &topeIzquierdo, int &topeDerecho,int  &topeSuperior,int &topeInferior){
 
@@ -18,7 +22,7 @@ void determinarTopes(const int fila,const int  columna, int &topeIzquierdo, int 
 			topeInferior = fila + 1;
 			break;
 		}
-		case CANTIDAD_FILAS :{
+		case CANTIDAD_FILAS - 1:{
 			topeSuperior = fila - 1;
 			topeInferior = fila;
 			break;
@@ -35,7 +39,7 @@ void determinarTopes(const int fila,const int  columna, int &topeIzquierdo, int 
 			topeDerecho = columna + 1;
 			break;
 		}
-		case CANTIDAD_COLUMNAS :{
+		case CANTIDAD_COLUMNAS - 1:{
 			topeIzquierdo = columna -1;
 			topeDerecho = columna;
 			break;
@@ -48,47 +52,52 @@ void determinarTopes(const int fila,const int  columna, int &topeIzquierdo, int 
 }
 
 
-int contarVecinasVivas(Celula matrizCelulas[CANTIDAD_FILAS][CANTIDAD_COLUMNAS], const int fila, const int columna){
+int contarVecinasVivas(const Celula matrizCelulas[CANTIDAD_FILAS][CANTIDAD_COLUMNAS], const int fila, const int columna){
 
-	//contarvidas
 	int cantidadVecinasVivas = 0;
 	int topeIzquierdo, topeDerecho, topeSuperior,topeInferior;
 
 	determinarTopes(fila, columna, topeIzquierdo, topeDerecho, topeSuperior,topeInferior);
 
+
 	for(int i = topeSuperior; i <= topeInferior; i++){
 		for(int j = topeIzquierdo; j <= topeDerecho; j++ ){
-			if(matrizCelulas[i][j].estado == Viva){
-				cantidadVecinasVivas++;
+			if(!(i == fila && j == columna)){
+				if(matrizCelulas[i][j].estado == Viva){
+					cantidadVecinasVivas++;
+				}
 			}
 		}
 	}
 	return cantidadVecinasVivas;
 }
 
-void cambiarEstadosCelulas(JuegoDeLaVida &juego,JuegoDeLaVida copiaJuego){
+void cambiarEstadosCelulas(JuegoDeLaVida &juego){
 	juego.tabla.estado = SinCambios;
+
+	JuegoDeLaVida copiaJuego;
+	copiarTablero( juego.tabla.tablero, copiaJuego.tabla.tablero);
+	int cantidadVecinasVivas;
 
 	for(int i = 0; i < CANTIDAD_FILAS; i++){
 		for(int j = 0; j < CANTIDAD_COLUMNAS; j++){
 
-			int cantidadVecinasVivas = contarVecinasVivas(juego.tabla.tablero, i, j);
+			cantidadVecinasVivas = contarVecinasVivas(copiaJuego.tabla.tablero, i, j);
 
-			if( juego.tabla.tablero[i][j].estado ==  Muerta && cantidadVecinasVivas == 3){
-					revivirEnPosicion(juego.tabla, i, j);
+			if( copiaJuego.tabla.tablero[i][j].estado ==  Muerta && cantidadVecinasVivas == 3){
+					revivirEnPosicion(juego.tabla, i+1, j+1);
 					juego.tabla.estado = ConCambios;
 					juego.nacimientosPorTurno++;
 			}
 			else{
-				if(juego.tabla.tablero[i][j].estado ==  Viva){
+				if(copiaJuego.tabla.tablero[i][j].estado ==  Viva){
 					if(cantidadVecinasVivas != 2 && cantidadVecinasVivas != 3){
-						matarEnPosicion(juego.tabla, i, j);
+						matarEnPosicion(juego.tabla, i+1, j+1);
 						juego.tabla.estado = ConCambios;
 						juego.muertesPorTurno++;
 					}
 				}
 			}
-
 		}
 	}
 
@@ -105,15 +114,15 @@ void mostrarDatos( const JuegoDeLaVida &juego){
 	cout << "Murieron  " << juego.muertesPorTurno << " celulas" << endl;
 	cout << "Total celulas vivas: " << juego.tabla.cantidadVivasTotales << endl;
 
-	cout << "---numero de turno: " << juego.cantidadTurnos;
+	cout << "---numero de turno: " << juego.cantidadTurnos << endl;
 
-/*	cout << "Promedio de nacimientos a lo largo del juego: "
+	cout << "Promedio de nacimientos a lo largo del juego: "
 	     << juego.totalNacimientos / juego.cantidadTurnos << " nacimientos por turno" << endl;
 
 	cout << "Promedio de muertes a lo largo del juego: "
-	<< juego.totalMuertes / juego.cantidadTurnos << " muertes por turno" << endl; */
+	<< juego.totalMuertes / juego.cantidadTurnos << " muertes por turno" << endl;
 
-	if(juego.cantidadTurnosSinCambio >= 2 ){//???????????????????????????????????????
+	if(juego.cantidadTurnosSinCambio >= 2 ){
 		cout << "El juego se congelo(no sufrio cambios en 2 turnos consecutivos)" << endl;
 	}
 
@@ -124,7 +133,7 @@ void ejecutarTurno(JuegoDeLaVida &juego){
 	juego.nacimientosPorTurno = 0;
 	juego.muertesPorTurno = 0;
 
-	cambiarEstadosCelulas(juego, juego);
+	cambiarEstadosCelulas(juego);
 
 	juego.tabla.cantidadVivasTotales = juego.tabla.cantidadVivasTotales + juego.nacimientosPorTurno - juego.muertesPorTurno;
 	juego.totalMuertes = juego.totalMuertes + juego.muertesPorTurno;
@@ -133,15 +142,19 @@ void ejecutarTurno(JuegoDeLaVida &juego){
 	mostrarTablero(juego.tabla);
 	mostrarDatos(juego);
 
+	if(juego.cantidadTurnos < juego.cantidadLimiteDeTurnos){
+		desplegarMenu(juego);
+	}
 }
 
 void  desplegarMenu(JuegoDeLaVida &juego){
 
 	int opcion;
 
-	cout << endl << endl << "------------Seleccione una opcion--------------" << endl
-	     << "1) Ejecutar un turno" << endl  << "2) Reiniciar el juego"
-	     << endl << "3) Terminar" << endl;
+	cout << endl << "------------Seleccione una opcion--------------" << endl;
+	cout << "1) Ejecutar un turno" << endl;
+	cout << "2) Reiniciar el juego" << endl;
+	cout << "3) Terminar" << endl;
 
 	cout << "Ingrese una opcion(1 - 3): ";
 	cin >> opcion;
@@ -153,7 +166,10 @@ void  desplegarMenu(JuegoDeLaVida &juego){
 			break;
 		}
 		case 2:{
+			cout << endl << endl << "-----JUEGO  REINICIADO----" << endl;
+			cargarTunosLimites(juego);
 			iniciarJuego(juego);
+			desplegarMenu(juego);
 			break;
 		}
 		default : {
@@ -164,10 +180,9 @@ void  desplegarMenu(JuegoDeLaVida &juego){
 
 int cargarCelulasVivas(JuegoDeLaVida &juego){
 	int posicionFila, posicionColumna;
-	cout << "Las células vivas se indicarán por fila y columna, siendo (1, 1) la celda" << endl
-              <<  "superior izquierda y la ("<< CANTIDAD_FILAS << "," << CANTIDAD_COLUMNAS << ") la celda inferior derecha."
-			  << endl;
-	cout << "Ingrese posicion de filas y columnas de la celulas vivas((0,0) para cancelar): ";
+	cout << "Las células vivas se indicarán por fila y columna, siendo (1, 1) la celda" << endl;
+    cout <<  "superior izquierda y la ("<< CANTIDAD_FILAS << "," << CANTIDAD_COLUMNAS << ") la celda inferior derecha." << endl;
+	cout << "Ingrese posicion de filas y columnas de la celulas vivas((0,0) para cancelar)" << endl;
 
 	int i = 0;
 
@@ -177,6 +192,8 @@ int cargarCelulasVivas(JuegoDeLaVida &juego){
 
 		cout << "Columna: ";
 		cin >> posicionColumna;
+
+		cout << endl;
 
 		if(posicionFila != 0 && posicionColumna != 0){
 			revivirEnPosicion(juego.tabla, posicionFila, posicionColumna);
@@ -197,15 +214,7 @@ void iniciarJuego(JuegoDeLaVida &juego){
 
 	juego.tabla.cantidadVivasTotales = juego.tabla.cantidadVivasTotales + cargarCelulasVivas(juego);
 
+	cout << "Mostrando estados iniciales: las celulas vivas se muestran con el caracter  \"v\" y las muertas con \".\"" << endl;
 	mostrarTablero(juego.tabla);
 	cout << "Cantidad de Celulas vivas: " << juego.tabla.cantidadVivasTotales << endl;
-
-	desplegarMenu(juego);
 }
-
-
-
-
-
-
-

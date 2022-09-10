@@ -21,12 +21,15 @@ typedef struct{
 	EstadoDeTablero estado;
 }Tablero;
 
-//POST: inicia el tablero con todas las celulas muertas
+//POST: inicia el tablero con todas las celulas muertas y con el campo cantidadVivasTotales en 0
 void iniciarTablero(Tablero &tabla);
 
-//POST: cambia el estado de la celula a viva en la posicion (posicionFila, posicionColumna)
+//PRE   0 <= posicionFila <= CANTIDAD_FILAS y 0 <= posicionColumna <= CANTIDAD_COLUMNAS
+//POST: cambia el estado de la celula a viva en la posicion (posicionFila - 1, posicionColumna - 1)
 void revivirEnPosicion(Tablero &tabla,const int posicionFila,const int posicionColumna);
 
+//PRE   0 <= FILA <= CANTIDAD_FILAS y 0 <= columna <= CANTIDAD_COLUMNAS
+//POST: cambia el estado de la celula a Muerta en la posicion (posicionFila - 1, posicionColumna - 1)
 void matarEnPosicion(Tablero &tabla,const int posicionFila,const int posicionColumna);
 
 
@@ -34,9 +37,7 @@ void matarEnPosicion(Tablero &tabla,const int posicionFila,const int posicionCol
 void mostrarTablero(Tablero tabla);
 
 
-
-
-
-
+//POST: copia cada dato en las posiciones de tablero en las mismas posiciones de copiaTablero
+void copiarTablero(  Celula tablero[CANTIDAD_FILAS][CANTIDAD_COLUMNAS], Celula copiaTablero[CANTIDAD_FILAS][CANTIDAD_COLUMNAS]);
 
 #endif /* TABLERO_H_ */
